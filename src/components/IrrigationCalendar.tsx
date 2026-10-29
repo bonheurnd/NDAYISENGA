@@ -256,7 +256,7 @@ export const IrrigationCalendar: React.FC<IrrigationCalendarProps> = ({
   }, [currentDate]);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xs overflow-hidden transition-colors">
       {/* Calendar Header Toolbar */}
       <div className="p-4 sm:p-5 bg-slate-900 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Title and Badge */}
@@ -340,46 +340,46 @@ export const IrrigationCalendar: React.FC<IrrigationCalendarProps> = ({
       </div>
 
       {/* Secondary Controls Bar: Filters & Period Label */}
-      <div className="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         {/* Active Period Label */}
-        <div className="font-bold text-slate-800 text-sm flex items-center gap-2">
-          <CalendarDays className="w-4 h-4 text-sky-600" />
+        <div className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+          <CalendarDays className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           <span>
             {monthNamesRw[month]} {year}
           </span>
-          <span className="text-slate-400 font-normal text-xs">({monthNamesEn[month]})</span>
+          <span className="text-slate-400 dark:text-slate-500 font-normal text-xs">({monthNamesEn[month]})</span>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Block Filter */}
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-500 font-medium">Block:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Block:</span>
             <select
               value={selectedBlockFilter}
               onChange={(e) => setSelectedBlockFilter(e.target.value)}
-              className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500"
+              className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-sky-500"
             >
-              <option value="ALL">All Blocks</option>
-              <option value="BLOCK-A">Block A (Pivot 01)</option>
-              <option value="BLOCK-B">Block B (Pivot 02)</option>
-              <option value="BLOCK-C">Block C (Dragline)</option>
+              <option value="ALL" className="dark:bg-slate-800">All Blocks</option>
+              <option value="BLOCK-A" className="dark:bg-slate-800">Block A (Pivot 01)</option>
+              <option value="BLOCK-B" className="dark:bg-slate-800">Block B (Pivot 02)</option>
+              <option value="BLOCK-C" className="dark:bg-slate-800">Block C (Dragline)</option>
             </select>
           </div>
 
           {/* Status Filter */}
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-500 font-medium">Status:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Status:</span>
             <select
               value={selectedStatusFilter}
               onChange={(e) => setSelectedStatusFilter(e.target.value)}
-              className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500"
+              className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-sky-500"
             >
-              <option value="ALL">All Statuses</option>
-              <option value="ONGOING">Iri Gukora (Ongoing)</option>
-              <option value="SCHEDULED">Yateganyijwe (Scheduled)</option>
-              <option value="COMPLETED">Yarangiye (Completed)</option>
-              <option value="INTERRUPTED">Yahagaritswe (Interrupted)</option>
+              <option value="ALL" className="dark:bg-slate-800">All Statuses</option>
+              <option value="ONGOING" className="dark:bg-slate-800">Iri Gukora (Ongoing)</option>
+              <option value="SCHEDULED" className="dark:bg-slate-800">Yateganyijwe (Scheduled)</option>
+              <option value="COMPLETED" className="dark:bg-slate-800">Yarangiye (Completed)</option>
+              <option value="INTERRUPTED" className="dark:bg-slate-800">Yahagaritswe (Interrupted)</option>
             </select>
           </div>
         </div>

@@ -63,10 +63,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Mandatory Demo Data Notice Banner */}
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 flex items-start gap-3">
-        <Info className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+      <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-amber-900 dark:text-amber-200 flex items-start gap-3">
+        <Info className="w-5 h-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
         <div className="text-xs leading-relaxed">
-          <span className="font-bold uppercase tracking-wider text-amber-800 mr-2">
+          <span className="font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 mr-2">
             [DEMO DATA NOTICE]
           </span>
           {language === 'rw'
@@ -78,10 +78,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Header with Season and Date Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             {language === 'rw' ? 'Ibonerana ry\'Umushinga wa Nasho 1' : 'Nasho 1 Scheme Operations Dashboard'}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {language === 'rw'
               ? 'Akarere ka Kirehe · Intara y\'Iburasirazuba · Igihe cy\'Ihinga 2026A'
               : 'Kirehe District · Eastern Province, Rwanda · Season 2026A'}
@@ -100,19 +100,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
           )}
 
-          <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1.5">
-            <label htmlFor="season-select" className="text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5">
+            <label htmlFor="season-select" className="text-xs font-medium text-slate-600 dark:text-slate-300">
               {language === 'rw' ? 'Igihe:' : 'Season:'}
             </label>
             <select
               id="season-select"
               value={selectedSeason}
               onChange={(e) => setSelectedSeason(e.target.value)}
-              className="text-xs bg-transparent font-medium text-slate-800 focus:outline-hidden"
+              className="text-xs bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-hidden"
             >
-              <option value="2026A">Season 2026A (Current)</option>
-              <option value="2025B">Season 2025B</option>
-              <option value="ALL">All Recorded Seasons</option>
+              <option value="2026A" className="dark:bg-slate-800">Season 2026A (Current)</option>
+              <option value="2025B" className="dark:bg-slate-800">Season 2025B</option>
+              <option value="ALL" className="dark:bg-slate-800">All Recorded Seasons</option>
             </select>
           </div>
         </div>
@@ -120,125 +120,125 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Primary KPI Grid (8 Core Operational Metrics) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">
               {language === 'rw' ? 'Abahinzi Bakora' : 'Active Farmers'}
             </span>
-            <Users className="w-4 h-4 text-sky-600" />
+            <Users className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 tabular-nums">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {metrics.activeFarmers}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Registered WUO members
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">
               {language === 'rw' ? 'Imirima / Pivo' : 'Registered Plots'}
             </span>
-            <Grid3X3 className="w-4 h-4 text-sky-600" />
+            <Grid3X3 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 tabular-nums">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {metrics.registeredPlots}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Across 3 Pivot Blocks
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">
               {language === 'rw' ? 'Ubuso Buhingwa' : 'Cultivated Area'}
             </span>
-            <TrendingUp className="w-4 h-4 text-emerald-600" />
+            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 tabular-nums">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {metrics.cultivatedHectares}{' '}
-            <span className="text-sm font-normal text-slate-500">Ha</span>
+            <span className="text-sm font-normal text-slate-500 dark:text-slate-400">Ha</span>
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Irrigated land under crop
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">
               {language === 'rw' ? 'Guhira Guteganyijwe' : 'Upcoming Deliveries'}
             </span>
-            <Calendar className="w-4 h-4 text-sky-600" />
+            <Calendar className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 tabular-nums">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {metrics.upcomingSchedules}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Next 48 operating hours
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">
               {language === 'rw' ? 'Guhagarara kw\'Amazi' : 'Water Interruptions'}
             </span>
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 tabular-nums">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {metrics.reportedInterruptions}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Active reported issues
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">
               {language === 'rw' ? 'Ibirarane by\'Inyemezabwishyu' : 'Outstanding Balance'}
             </span>
-            <Receipt className="w-4 h-4 text-rose-600" />
+            <Receipt className="w-4 h-4 text-rose-600 dark:text-rose-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 tabular-nums">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {(metrics.outstandingInvoicesRwf / 1000).toFixed(0)}k{' '}
-            <span className="text-xs font-normal text-slate-500">RWF</span>
+            <span className="text-xs font-normal text-slate-500 dark:text-slate-400">RWF</span>
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Unsettled seasonal dues
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">
               {language === 'rw' ? 'Amafaranga Yinjiye' : 'Collected Revenue'}
             </span>
-            <CheckCircle className="w-4 h-4 text-emerald-600" />
+            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 tabular-nums">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {(metrics.recordedPaymentsRwf / 1000).toFixed(0)}k{' '}
-            <span className="text-xs font-normal text-slate-500">RWF</span>
+            <span className="text-xs font-normal text-slate-500 dark:text-slate-400">RWF</span>
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Verified MoMo & bank deposits
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">
               {language === 'rw' ? 'Gusana Gukorwa' : 'Open Work Orders'}
             </span>
-            <Wrench className="w-4 h-4 text-sky-600" />
+            <Wrench className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 tabular-nums">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             {metrics.openMaintenanceJobs}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
             Active maintenance tickets
           </div>
         </div>
@@ -265,38 +265,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         />
 
         {/* Financial Revenue Collection & Reconciliation Health */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-bold text-slate-900">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                 {language === 'rw'
                   ? 'Ubwishyu bwakiriwe n\'Ibirarane'
                   : 'Revenue Collection & Reconciliation'}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Seasonal water levy recovery rate
               </p>
             </div>
             <button
               onClick={() => onNavigate('billing')}
-              className="text-xs font-semibold text-sky-700 hover:text-sky-800 cursor-pointer"
+              className="text-xs font-semibold text-sky-700 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 cursor-pointer"
             >
               View Invoices →
             </button>
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-700 mb-1.5">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700/60 mb-4">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
               <span>Collection Progress</span>
-              <span className="font-bold text-slate-900 tabular-nums">{collectionRate}%</span>
+              <span className="font-bold text-slate-900 dark:text-white tabular-nums">{collectionRate}%</span>
             </div>
-            <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
               <div
-                className="bg-emerald-600 h-3 rounded-full transition-all duration-500"
+                className="bg-emerald-600 dark:bg-emerald-500 h-3 rounded-full transition-all duration-500"
                 style={{ width: `${collectionRate}%` }}
               />
             </div>
-            <div className="flex justify-between items-center text-[11px] text-slate-500 mt-2 font-mono tabular-nums">
+            <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-mono tabular-nums">
               <span>Collected: {totalCollected.toLocaleString()} RWF</span>
               <span>Total Invoiced: {totalInvoiced.toLocaleString()} RWF</span>
             </div>
@@ -304,29 +304,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Quick summary rows */}
           <div className="space-y-3 text-xs">
-            <div className="flex items-center justify-between py-2 border-b border-slate-100">
-              <span className="text-slate-600">Active Center Pivot Tariffs</span>
-              <span className="font-semibold text-slate-900">45,000 RWF / Ha / Season</span>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="text-slate-600 dark:text-slate-400">Active Center Pivot Tariffs</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-200">45,000 RWF / Ha / Season</span>
             </div>
-            <div className="flex items-center justify-between py-2 border-b border-slate-100">
-              <span className="text-slate-600">WUO Infrastructure Levy</span>
-              <span className="font-semibold text-slate-900">5,000 RWF / Ha / Season</span>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="text-slate-600 dark:text-slate-400">WUO Infrastructure Levy</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-200">5,000 RWF / Ha / Season</span>
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-slate-600">Payment Channels Verified</span>
-              <span className="font-medium text-emerald-700">MTN MoMo (*182#) · Airtel · BK</span>
+              <span className="text-slate-600 dark:text-slate-400">Payment Channels Verified</span>
+              <span className="font-medium text-emerald-700 dark:text-emerald-400">MTN MoMo (*182#) · Airtel · BK</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Operational Highlights / Quick Actions Strip */}
-      <div className="bg-slate-900 text-white rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-slate-900 dark:bg-slate-800 text-white rounded-xl p-5 border border-slate-800 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold text-white">
             {language === 'rw' ? 'Ibikorwa Byihutirwa by\'Uyu Munsi' : 'Immediate Operations Checklist'}
           </h3>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-xs text-slate-300 dark:text-slate-400 mt-1">
             Review pending water schedules, process incoming mobile money payments, and inspect Pivot 03 repairs.
           </p>
         </div>
@@ -339,7 +339,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </button>
           <button
             onClick={() => onNavigate('farmer-portal')}
-            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer"
+            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-slate-200 border border-slate-700 transition cursor-pointer"
           >
             Open Farmer PWA
           </button>

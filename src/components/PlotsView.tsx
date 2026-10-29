@@ -101,23 +101,23 @@ export const PlotsView: React.FC<PlotsViewProps> = ({
       {/* Top Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             {language === 'rw' ? 'Imirima n\'Imashini za Center Pivot' : 'Plots & Center Pivot Management'}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             GFI Nasho 1 · Lake Nasho Irrigation System Blocks
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           {/* Segmented View Mode Switch */}
-          <div className="flex items-center p-1 bg-slate-100 rounded-lg">
+          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
             <button
               onClick={() => setViewMode('pivot-map')}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition cursor-pointer whitespace-nowrap shrink-0 ${
                 viewMode === 'pivot-map'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Pivot Spatial Layout
@@ -126,8 +126,8 @@ export const PlotsView: React.FC<PlotsViewProps> = ({
               onClick={() => setViewMode('grid')}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition cursor-pointer whitespace-nowrap shrink-0 ${
                 viewMode === 'grid'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Data Table
@@ -137,9 +137,9 @@ export const PlotsView: React.FC<PlotsViewProps> = ({
           {/* QR Posters Tool Button */}
           <button
             onClick={() => setShowPosterModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition shadow-xs cursor-pointer whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs cursor-pointer whitespace-nowrap shrink-0"
           >
-            <QrCode className="w-3.5 h-3.5 text-sky-600" />
+            <QrCode className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
             <span>{language === 'rw' ? 'Sohora Inyandiko za QR (PDF)' : 'Generate QR Posters (PDF)'}</span>
           </button>
 
@@ -147,10 +147,10 @@ export const PlotsView: React.FC<PlotsViewProps> = ({
           {canManagePlots && (
             <button
               onClick={() => setShowConfigModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition shadow-xs cursor-pointer whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-xs cursor-pointer whitespace-nowrap shrink-0"
               title={language === 'rw' ? "Tegura imiterere n'ibirango by'ibyapa bya QR" : "Configure QR poster branding and layout"}
             >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <Settings className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
               <span>{language === 'rw' ? "Tegura Imiterere y'Ibyapa bya QR" : "Configure QR Poster Template"}</span>
             </button>
           )}
@@ -172,15 +172,15 @@ export const PlotsView: React.FC<PlotsViewProps> = ({
 
       {/* Block Filter Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-        <span className="text-slate-500 font-medium mr-1">Filter Block:</span>
+        <span className="text-slate-500 dark:text-slate-400 font-medium mr-1">Filter Block:</span>
         {['ALL', 'BLOCK-A', 'BLOCK-B', 'BLOCK-C'].map((b) => (
           <button
             key={b}
             onClick={() => setSelectedBlock(b)}
             className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer whitespace-nowrap shrink-0 ${
               selectedBlock === b
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-slate-900 dark:bg-sky-600 text-white font-bold'
+                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
           >
             {b === 'ALL' ? 'All Blocks' : b}

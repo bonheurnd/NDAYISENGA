@@ -161,7 +161,7 @@ export const QrPosterConfigModal: React.FC<QrPosterConfigModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-xs p-3 sm:p-5">
-      <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[94vh]">
+      <div className="w-full max-w-6xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-[94vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-slate-900 text-white shrink-0">
           <div className="flex items-center gap-3">

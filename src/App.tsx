@@ -265,7 +265,7 @@ export default function App() {
     farmers.find((f) => f.id === currentUser.farmerId) || farmers[0];
 
   return (
-    <div className="min-h-screen bg-slate-100/60 text-slate-900 flex flex-col font-sans antialiased selection:bg-sky-500 selection:text-white">
+    <div className="min-h-screen bg-slate-100/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200">
       {/* Top Bar Contract */}
       <Navbar
         currentTab={currentTab}

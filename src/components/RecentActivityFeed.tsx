@@ -1,33 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Droplets,
   Wrench,
-  Receipt,
-  ArrowRight,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
   CreditCard,
-  Activity,
+  ChevronRight,
+  Clock,
   Sparkles,
+  ClipboardList,
 } from 'lucide-react';
 import type { WaterSchedule, WorkOrder, Payment, Language, IrrigationQuickLog } from '../types/index.ts';
 
-export interface RecentActivityFeedProps {
-  schedules: WaterSchedule[];
-  workOrders: WorkOrder[];
-  payments: Payment[];
-  quickLogs?: IrrigationQuickLog[];
-  language: Language;
-  onNavigate: (tab: string) => void;
-  maxItems?: number;
-}
-
-export type ActivityCategory = 'ALL' | 'QUICK_LOG' | 'SCHEDULE' | 'MAINTENANCE' | 'PAYMENT';
-
-interface UnifiedActivityItem {
+interface ActivityItem {
   id: string;
-  category: 'QUICK_LOG' | 'SCHEDULE' | 'MAINTENANCE' | 'PAYMENT';
+  category: 'SCHEDULE' | 'MAINTENANCE' | 'PAYMENT' | 'QUICK_LOG';
   title: string;
   subtitle: string;
   timestampISO: string;
@@ -37,138 +22,112 @@ interface UnifiedActivityItem {
   amountOrMetric?: string;
   targetTab: string;
   actorName: string;
-  requiresFollowup?: boolean;
+}
+
+type ActivityCategory = 'ALL' | 'SCHEDULE' | 'MAINTENANCE' | 'PAYMENT' | 'QUICK_LOG';
+
+interface RecentActivityFeedProps {
+  schedules: WaterSchedule[];
+  workOrders: WorkOrder[];
+  payments: Payment[];
+  quickLogs?: IrrigationQuickLog[];
+  language: Language;
+  onNavigate: (tab: string) => void;
+  maxItems?: number;
 }
 
 export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
   schedules,
-  workOrders = [],
+  workOrders,
   payments,
   quickLogs = [],
   language,
   onNavigate,
-  maxItems = 8,
+  maxItems = 6,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<ActivityCategory>('ALL');
 
-  // Convert disparate items into a unified timeline sorted descending by timestamp
+  // Convert raw domain objects into unified timeline feed
   const unifiedActivities = useMemo(() => {
-    const items: UnifiedActivityItem[] = [];
+    const items: ActivityItem[] = [];
 
-    // 0. Quick Logs Activities
+    // Map Quick Logs
     quickLogs.forEach((ql) => {
-      const isRw = language === 'rw';
-      let statusBadgeClass = 'bg-slate-50 text-slate-700 border-slate-200';
-      if (ql.irrigationStatus === 'COMPLETED_SUCCESSFULLY') {
-        statusBadgeClass = 'bg-emerald-50 text-emerald-800 border-emerald-200';
-      } else if (ql.irrigationStatus === 'IN_PROGRESS') {
-        statusBadgeClass = 'bg-amber-50 text-amber-800 border-amber-200';
-      } else if (ql.irrigationStatus === 'INTERRUPTED' || ql.irrigationStatus === 'PROBLEM_REPORTED') {
-        statusBadgeClass = 'bg-rose-50 text-rose-800 border-rose-300 font-bold';
-      }
-
-      const timeStr = ql.createdAt
-        ? new Date(ql.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : ql.reportDate;
-
       items.push({
-        id: `act-ql-${ql.id}`,
+        id: `ql-${ql.id}`,
         category: 'QUICK_LOG',
         title: `Quick Log · ${ql.blockCode}`,
         subtitle: ql.problemDescription
           ? `Problem: ${ql.problemDescription}`
-          : ql.notes || (isRw ? 'Raporo yihuse yaguzwe neza' : 'Field status report submitted'),
-        timestampISO: ql.createdAt || `${ql.reportDate}T08:00:00Z`,
-        displayTime: timeStr,
-        statusLabel: ql.irrigationStatus.replace('_', ' '),
-        statusBadgeClass,
-        amountOrMetric: ql.waterVolumeM3 ? `${ql.waterVolumeM3} m³` : ql.irrigationStatus,
+          : ql.notes
+          ? ql.notes
+          : `Irrigation Status: ${ql.irrigationStatus}`,
+        timestampISO: ql.createdAt || new Date().toISOString(),
+        displayTime: new Date(ql.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        statusLabel: ql.requiresFollowup ? 'FOLLOW-UP NEEDED' : ql.irrigationStatus,
+        statusBadgeClass: ql.requiresFollowup
+          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300'
+          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300',
+        amountOrMetric: ql.waterVolumeM3 ? `${ql.waterVolumeM3} m³` : undefined,
         targetTab: 'dashboard',
         actorName: `${ql.reportedBy} (${ql.reporterRole})`,
-        requiresFollowup: ql.requiresFollowup,
       });
     });
 
-    // 1. Water Schedule Activities
+    // Map Schedules
     schedules.forEach((s) => {
-      const isRw = language === 'rw';
-      let statusBadgeClass = 'bg-sky-50 text-sky-700 border-sky-200';
-      if (s.status === 'COMPLETED') statusBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      if (s.status === 'IN_PROGRESS') statusBadgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
-      if (s.status === 'INTERRUPTED') statusBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
-
-      const timeStr = s.plannedStartTime
-        ? new Date(s.plannedStartTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : 'Recent';
+      let badgeClass = 'bg-sky-50 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-200';
+      if (s.status === 'COMPLETED') badgeClass = 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200';
+      if (s.status === 'IN_PROGRESS') badgeClass = 'bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-200';
+      if (s.status === 'INTERRUPTED' || s.status === 'CANCELLED') badgeClass = 'bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-200';
 
       items.push({
-        id: `act-sch-${s.id}`,
+        id: `sched-${s.id}`,
         category: 'SCHEDULE',
-        title: `${s.scheduleCode} · ${s.plotCode}`,
-        subtitle: isRw
-          ? `Iteganyamazi ryo kuhira mu kigo ${s.plotCode} rya ${s.farmerName}`
-          : `Irrigation slot scheduled for plot ${s.plotCode} (${s.farmerName})`,
-        timestampISO: s.plannedStartTime || new Date().toISOString(),
-        displayTime: timeStr,
-        statusLabel: s.status,
-        statusBadgeClass,
+        title: `Water Shift · ${s.plotCode}`,
+        subtitle: `${s.farmerName} · Planned Volume: ${s.plannedVolumeM3} m³`,
+        timestampISO: s.plannedStartTime,
+        displayTime: new Date(s.plannedStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        statusLabel: s.status.replace('_', ' '),
+        statusBadgeClass: badgeClass,
         amountOrMetric: `${s.plannedVolumeM3} m³`,
         targetTab: 'schedules',
-        actorName: s.farmerName || 'Member',
+        actorName: s.approvedBy ? `Approved na ${s.approvedBy}` : 'Scheduled Allocation',
       });
     });
 
-    // 2. Maintenance Work Order Activities
-    workOrders.forEach((wo) => {
-      const isRw = language === 'rw';
-      let statusBadgeClass = 'bg-amber-50 text-amber-800 border-amber-200';
-      if (wo.status === 'COMPLETED' || wo.status === 'VERIFIED') {
-        statusBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      } else if (wo.priority === 'EMERGENCY' || wo.priority === 'HIGH') {
-        statusBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
-      }
-
-      const timeStr = wo.reportedDate
-        ? new Date(wo.reportedDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : 'Recent';
+    // Map Work Orders
+    workOrders.forEach((w) => {
+      let badgeClass = 'bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-200';
+      if (w.status === 'COMPLETED') badgeClass = 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200';
+      if (w.status === 'IN_PROGRESS') badgeClass = 'bg-sky-50 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-200';
 
       items.push({
-        id: `act-wo-${wo.id}`,
+        id: `wo-${w.id}`,
         category: 'MAINTENANCE',
-        title: `${wo.workOrderNumber} · ${wo.equipmentCode}`,
-        subtitle: isRw
-          ? `Gusana icyuma ${wo.equipmentName}: ${wo.title}`
-          : `Maintenance ticket for ${wo.equipmentName}: ${wo.title}`,
-        timestampISO: wo.reportedDate || new Date().toISOString(),
-        displayTime: timeStr,
-        statusLabel: `${wo.priority} / ${wo.status}`,
-        statusBadgeClass,
-        amountOrMetric: `${wo.downtimeHours}h downtime`,
+        title: `${w.title} (${w.equipmentCode})`,
+        subtitle: w.description,
+        timestampISO: w.reportedDate || new Date().toISOString(),
+        displayTime: new Date(w.reportedDate || Date.now()).toLocaleDateString([], { month: 'short', day: 'numeric' }),
+        statusLabel: w.status.replace('_', ' '),
+        statusBadgeClass: badgeClass,
+        amountOrMetric: w.estimatedCostRwf ? `${(w.estimatedCostRwf / 1000).toFixed(0)}k RWF` : 'Inspected',
         targetTab: 'maintenance',
-        actorName: wo.assignedTechnicianName || 'Maintenance Tech',
+        actorName: w.assignedTechnicianName || 'Unassigned Tech',
       });
     });
 
-    // 3. Payment Receipts
+    // Map Payments
     payments.forEach((p) => {
-      const isRw = language === 'rw';
-      const timeStr = p.recordedAt
-        ? new Date(p.recordedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : 'Recent';
-
-      const methodLabel = p.paymentMethod.replace('_', ' ');
-
       items.push({
-        id: `act-pay-${p.id}`,
+        id: `pay-${p.id}`,
         category: 'PAYMENT',
-        title: `${p.receiptNumber} · ${p.invoiceNumber}`,
-        subtitle: isRw
-          ? `Ubwishyu bwemewe bwa ${p.farmerName} binyuze kuri ${methodLabel}`
-          : `Verified water fee deposit from ${p.farmerName} via ${methodLabel}`,
+        title: `MoMo Deposit · ${p.paymentMethod || 'MTN MoMo'}`,
+        subtitle: `Ref: ${p.transactionReference || p.receiptNumber} · Invoice #${p.invoiceNumber || p.invoiceId || 'DIRECT'}`,
         timestampISO: p.recordedAt || new Date().toISOString(),
-        displayTime: timeStr,
+        displayTime: new Date(p.recordedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         statusLabel: 'VERIFIED',
-        statusBadgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+        statusBadgeClass: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200',
         amountOrMetric: `${p.amountRwf.toLocaleString()} RWF`,
         targetTab: 'billing',
         actorName: p.farmerName || 'Payer',
@@ -177,7 +136,7 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
 
     // Sort descending by ISO timestamp
     return items.sort((a, b) => new Date(b.timestampISO).getTime() - new Date(a.timestampISO).getTime());
-  }, [schedules, workOrders, payments, language]);
+  }, [schedules, workOrders, payments, quickLogs, language]);
 
   // Filter based on active category tab
   const filteredActivities = useMemo(() => {
@@ -196,20 +155,20 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
   }, [unifiedActivities]);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-xs space-y-4 transition-colors">
       {/* Header & Category Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-slate-900">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
               {language === 'rw' ? 'Ibikorwa Bya Hafi Aha' : 'Recent Scheme Activity Feed'}
             </h2>
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold font-mono">
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>LIVE FEED</span>
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {language === 'rw'
               ? 'Ibipimo by\'amazi, ibikorwa byo gusana no kwishyura inyemezabwishyu'
               : 'Real-time telemetry stream of water allocations, equipment repairs, and verified deposits'}
@@ -217,7 +176,7 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
         </div>
 
         {/* Category Segmented Tabs */}
-        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg text-xs overflow-x-auto">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-lg text-xs overflow-x-auto">
           {(['ALL', 'SCHEDULE', 'MAINTENANCE', 'PAYMENT', 'QUICK_LOG'] as ActivityCategory[]).map((cat) => {
             let label = 'All';
             if (cat === 'SCHEDULE') label = language === 'rw' ? 'Kuhira' : 'Schedules';
@@ -233,14 +192,16 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                   selectedCategory === cat
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <span>{label}</span>
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono tabular-nums ${
-                    selectedCategory === cat ? 'bg-slate-100 text-slate-900 font-bold' : 'bg-slate-200/70 text-slate-600'
+                    selectedCategory === cat
+                      ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white font-bold'
+                      : 'bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                   }`}
                 >
                   {count}
@@ -252,24 +213,27 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
       </div>
 
       {/* Activity Timeline List */}
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-slate-100 dark:divide-slate-700/60">
         {filteredActivities.map((item) => {
           let IconComponent = Droplets;
-          let iconContainerClass = 'bg-sky-100 text-sky-700 border-sky-200';
+          let iconContainerClass = 'bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800';
 
           if (item.category === 'MAINTENANCE') {
             IconComponent = Wrench;
-            iconContainerClass = 'bg-amber-100 text-amber-700 border-amber-200';
+            iconContainerClass = 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
           } else if (item.category === 'PAYMENT') {
             IconComponent = CreditCard;
-            iconContainerClass = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            iconContainerClass = 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
+          } else if (item.category === 'QUICK_LOG') {
+            IconComponent = ClipboardList;
+            iconContainerClass = 'bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800';
           }
 
           return (
             <div
               key={item.id}
               onClick={() => onNavigate(item.targetTab)}
-              className="py-3.5 flex items-start justify-between gap-4 hover:bg-slate-50/80 p-2 rounded-xl transition cursor-pointer group"
+              className="py-3.5 flex items-start justify-between gap-4 hover:bg-slate-50/80 dark:hover:bg-slate-700/40 p-2 rounded-xl transition cursor-pointer group"
             >
               {/* Left Column: Category Icon & Details */}
               <div className="flex items-start gap-3 min-w-0">
@@ -279,7 +243,7 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
 
                 <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-xs text-slate-900 truncate">
+                    <span className="font-bold text-xs text-slate-900 dark:text-white truncate">
                       {item.title}
                     </span>
                     <span
@@ -289,16 +253,16 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-600 leading-snug truncate">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-snug truncate">
                     {item.subtitle}
                   </p>
 
                   {/* Unboxed Metadata Line with Bullet Separators */}
-                  <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                     <span>{item.actorName}</span>
-                    <span aria-hidden="true" className="text-slate-300">·</span>
-                    <span className="flex items-center gap-1 text-slate-400">
-                      <Clock className="w-3 h-3 text-slate-400" />
+                    <span aria-hidden="true" className="text-slate-300 dark:text-slate-600">·</span>
+                    <span className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
+                      <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                       <span>{item.displayTime}</span>
                     </span>
                   </div>
@@ -309,44 +273,21 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({
               <div className="flex items-center gap-3 shrink-0 text-right">
                 {item.amountOrMetric && (
                   <div className="text-right">
-                    <span className="block font-mono font-bold text-xs text-slate-900 tabular-nums">
+                    <span className="block font-mono font-bold text-xs text-slate-900 dark:text-white tabular-nums">
                       {item.amountOrMetric}
                     </span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">
                       {item.category}
                     </span>
                   </div>
                 )}
-                <div className="p-1 text-slate-400 group-hover:text-sky-600 group-hover:translate-x-0.5 transition-transform">
-                  <ArrowRight className="w-4 h-4" />
+                <div className="p-1 text-slate-400 dark:text-slate-500 group-hover:text-sky-600 dark:group-hover:text-sky-400 group-hover:translate-x-0.5 transition-transform">
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
             </div>
           );
         })}
-
-        {filteredActivities.length === 0 && (
-          <div className="py-10 text-center text-slate-500 text-xs">
-            {language === 'rw'
-              ? 'Nta gikorwa kigaragara muri iki kiciro'
-              : 'No recent activity recorded for this category filter.'}
-          </div>
-        )}
-      </div>
-
-      {/* Footer link to jump to full audits / reports */}
-      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-        <span className="text-[11px]">
-          {language === 'rw'
-            ? 'Ibikorwa byose biratunganywa binyuze muri sisitemu ya GFI Nasho 1'
-            : 'All events strictly audited and mirrored to Lake Nasho system logs'}
-        </span>
-        <button
-          onClick={() => onNavigate('reports')}
-          className="font-semibold text-sky-700 hover:text-sky-800 transition flex items-center gap-1"
-        >
-          <span>{language === 'rw' ? 'Reba Raporo Zose →' : 'View Full Audit Trail →'}</span>
-        </button>
       </div>
     </div>
   );

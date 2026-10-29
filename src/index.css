@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+/* Base design tokens & dark mode root classes */
+@layer base {
+  :root {
+    --color-bg-app: #f1f5f9;
+    --color-bg-surface: #ffffff;
+    --color-bg-muted: #f8fafc;
+    --color-border: #e2e8f0;
+    --color-text-main: #0f172a;
+    --color-text-muted: #64748b;
+  }
+
+  html.dark {
+    --color-bg-app: #0f172a;
+    --color-bg-surface: #1e293b;
+    --color-bg-muted: #334155;
+    --color-border: #334155;
+    --color-text-main: #f8fafc;
+    --color-text-muted: #94a3b8;
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg-app);
+    color: var(--color-text-main);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+/* Print overrides: Always force light background and dark text for printable posters & documents */
+@media print {
+  html, body, .dark, [data-theme="dark"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .print-clean {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+}

@@ -153,10 +153,10 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
       {/* Top Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             {language === 'rw' ? 'Urutonde rw\'Abahinzi n\'Umuryango w\'Abakoresha Amazi (WUO)' : 'Farmer & WUO Directory'}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             GFI Nasho 1 Water Users Organization (WUO) Member Registry
           </p>
         </div>
@@ -204,27 +204,27 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
             }
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+            className="w-full pl-9 pr-4 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-500"
           />
         </div>
 
         <select
           value={selectedCoop}
           onChange={(e) => setSelectedCoop(e.target.value)}
-          className="text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+          className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-sky-500"
         >
-          <option value="ALL">All Water Users Organizations (WUO)</option>
-          <option value="Umuryango w'Abakoresha Amazi Nasho (WUO)">Umuryango w'Abakoresha Amazi Nasho (WUO)</option>
-          <option value="Umuryango w'Abakoresha Amazi Cyambwe (WUO)">Umuryango w'Abakoresha Amazi Cyambwe (WUO)</option>
-          <option value="Umuryango w'Abakoresha Amazi Duterimbere (WUO)">Umuryango w'Abakoresha Amazi Duterimbere (WUO)</option>
+          <option value="ALL" className="dark:bg-slate-800">All Water Users Organizations (WUO)</option>
+          <option value="Umuryango w'Abakoresha Amazi Nasho (WUO)" className="dark:bg-slate-800">Umuryango w'Abakoresha Amazi Nasho (WUO)</option>
+          <option value="Umuryango w'Abakoresha Amazi Cyambwe (WUO)" className="dark:bg-slate-800">Umuryango w'Abakoresha Amazi Cyambwe (WUO)</option>
+          <option value="Umuryango w'Abakoresha Amazi Duterimbere (WUO)" className="dark:bg-slate-800">Umuryango w'Abakoresha Amazi Duterimbere (WUO)</option>
         </select>
       </div>
 
       {/* High-density Farmer Data Grid */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+            <thead className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="py-3 px-4">Code</th>
                 <th className="py-3 px-4">Full Name</th>
@@ -236,36 +236,36 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
                 <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
               {filteredFarmers.map((f) => (
-                <tr key={f.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3 px-4 font-mono font-medium text-slate-900">
+                <tr key={f.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition-colors">
+                  <td className="py-3 px-4 font-mono font-medium text-slate-900 dark:text-white">
                     {f.farmerCode}
                   </td>
-                  <td className="py-3 px-4 font-semibold text-slate-900">
+                  <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
                     {f.fullName}
                   </td>
-                  <td className="py-3 px-4 font-mono text-slate-600">
+                  <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">
                     {f.phone}
                   </td>
-                  <td className="py-3 px-4 font-mono text-slate-500">
+                  <td className="py-3 px-4 font-mono text-slate-500 dark:text-slate-400">
                     {f.nationalId || '—'}
                   </td>
-                  <td className="py-3 px-4 text-slate-600">
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
                     {f.cooperativeName}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-[11px] font-medium text-emerald-700">
+                    <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
                       {f.membershipStatus}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-800">
+                  <td className="py-3 px-4 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
                     {f.totalHectares} Ha
                   </td>
                   <td className="py-3 px-4 text-right">
                     <button
                       onClick={() => setSelectedFarmer(f)}
-                      className="text-xs font-semibold text-sky-700 hover:text-sky-900 cursor-pointer"
+                      className="text-xs font-semibold text-sky-700 dark:text-sky-400 hover:text-sky-900 dark:hover:text-sky-300 cursor-pointer"
                     >
                       {language === 'rw' ? 'Ibisobanuro' : 'Details'}
                     </button>

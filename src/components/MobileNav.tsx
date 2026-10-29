@@ -20,15 +20,15 @@ export const MobileNav: React.FC<MobileNavProps> = ({
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 pb-safe shadow-lg"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 pb-safe shadow-lg transition-colors"
     >
       <div className="grid grid-cols-5 items-center h-16 max-w-lg mx-auto">
         <button
           onClick={() => onSelectTab(isFarmer ? 'farmer-portal' : 'dashboard')}
           className={`min-h-[48px] flex flex-col items-center justify-center transition ${
             currentTab === 'dashboard' || currentTab === 'farmer-portal'
-              ? 'text-sky-700 font-semibold'
-              : 'text-slate-600 hover:text-slate-800'
+              ? 'text-sky-700 dark:text-sky-400 font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
           aria-label={isFarmer ? 'Home' : 'Dashboard'}
         >
@@ -41,7 +41,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
         <button
           onClick={() => onSelectTab('farmers')}
           className={`min-h-[48px] flex flex-col items-center justify-center transition ${
-            currentTab === 'farmers' ? 'text-sky-700 font-semibold' : 'text-slate-600 hover:text-slate-800'
+            currentTab === 'farmers' ? 'text-sky-700 dark:text-sky-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
           aria-label="Farmers"
         >
@@ -54,7 +54,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
         <button
           onClick={() => onSelectTab('schedules')}
           className={`min-h-[48px] flex flex-col items-center justify-center transition ${
-            currentTab === 'schedules' ? 'text-sky-700 font-semibold' : 'text-slate-600 hover:text-slate-800'
+            currentTab === 'schedules' ? 'text-sky-700 dark:text-sky-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
           aria-label="Water Scheduling"
         >
@@ -67,7 +67,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
         <button
           onClick={() => onSelectTab('billing')}
           className={`min-h-[48px] flex flex-col items-center justify-center transition ${
-            currentTab === 'billing' ? 'text-sky-700 font-semibold' : 'text-slate-600 hover:text-slate-800'
+            currentTab === 'billing' ? 'text-sky-700 dark:text-sky-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
           aria-label="Billing"
         >
@@ -80,11 +80,11 @@ export const MobileNav: React.FC<MobileNavProps> = ({
         <button
           onClick={() => onSelectTab('farmer-portal')}
           className={`min-h-[48px] flex flex-col items-center justify-center transition ${
-            currentTab === 'farmer-portal' ? 'text-emerald-700 font-semibold' : 'text-slate-600 hover:text-slate-800'
+            currentTab === 'farmer-portal' ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
           aria-label="Farmer Portal"
         >
-          <Sprout className="w-5 h-5 text-emerald-600" />
+          <Sprout className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           <span className="text-[10px] font-medium tracking-tight mt-1">
             {language === 'rw' ? 'PWA' : 'Farmer PWA'}
           </span>
