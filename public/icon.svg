@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#0284c7"/>
+  <path d="M256 64 C256 64, 136 212, 136 320 C136 386.274 189.726 440 256 440 C322.274 440 376 386.274 376 320 C376 212, 256 64, 256 64 Z" fill="#ffffff" fill-opacity="0.95"/>
+  <path d="M256 160 C256 160, 184 250, 184 316 C184 355.765 216.235 388 256 388 C295.765 388 328 355.765 328 316 C328 250, 256 160, 256 160 Z" fill="#0284c7"/>
+  <!-- Center pivot spray arcs -->
+  <path d="M220 300 Q256 260 292 300" stroke="#38bdf8" stroke-width="12" stroke-linecap="round"/>
+  <path d="M196 330 Q256 280 316 330" stroke="#38bdf8" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="256" cy="356" r="10" fill="#38bdf8"/>
+</svg>
