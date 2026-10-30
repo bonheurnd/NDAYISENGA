@@ -20,6 +20,7 @@ import { ReportsView } from './components/ReportsView.tsx';
 import { SmsLogsView } from './components/SmsLogsView.tsx';
 import { SettingsView } from './components/SettingsView.tsx';
 import { FarmerPortalView } from './components/FarmerPortalView.tsx';
+import { AdminUsersView } from './components/AdminUsersView.tsx';
 import { api } from './lib/services/api.ts';
 import type {
   User,
@@ -265,7 +266,7 @@ export default function App() {
     farmers.find((f) => f.id === currentUser.farmerId) || farmers[0];
 
   return (
-    <div className="min-h-screen bg-slate-100/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200">
+    <div className="min-h-screen bg-slate-100/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans antialiased selection:bg-emerald-600 selection:text-white transition-colors duration-200">
       {/* Top Bar Contract */}
       <Navbar
         currentTab={currentTab}
@@ -289,128 +290,137 @@ export default function App() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full pb-20 lg:pb-8">
           <ErrorBoundary language={language} onReset={loadData}>
             {currentTab === 'dashboard' && (
-            <DashboardView
-              metrics={metrics}
-              schedules={schedules}
-              invoices={invoices}
-              payments={payments}
-              workOrders={workOrders}
-              quickLogs={quickLogs}
-              plots={plots}
-              currentRole={currentUser.role}
-              language={language}
-              onNavigate={setCurrentTab}
-              onSubmitQuickLog={handleSubmitQuickLog}
-            />
-          )}
+              <DashboardView
+                metrics={metrics}
+                schedules={schedules}
+                invoices={invoices}
+                payments={payments}
+                workOrders={workOrders}
+                quickLogs={quickLogs}
+                plots={plots}
+                currentRole={currentUser.role}
+                language={language}
+                onNavigate={setCurrentTab}
+                onSubmitQuickLog={handleSubmitQuickLog}
+              />
+            )}
 
-          {currentTab === 'farmers' && (
-            <FarmersView
-              farmers={farmers}
-              language={language}
-              currentRole={currentUser.role}
-              onAddFarmer={handleAddFarmer}
-              onImportCsv={handleImportCsv}
-            />
-          )}
+            {currentTab === 'farmers' && (
+              <FarmersView
+                farmers={farmers}
+                language={language}
+                currentRole={currentUser.role}
+                onAddFarmer={handleAddFarmer}
+                onImportCsv={handleImportCsv}
+              />
+            )}
 
-          {currentTab === 'plots' && (
-            <PlotsView
-              plots={plots}
-              farmers={farmers}
-              language={language}
-              currentRole={currentUser.role}
-              onAddPlot={handleAddPlot}
-              posterTemplate={posterTemplate}
-              onSavePosterTemplate={handleSavePosterTemplate}
-            />
-          )}
+            {currentTab === 'plots' && (
+              <PlotsView
+                plots={plots}
+                farmers={farmers}
+                language={language}
+                currentRole={currentUser.role}
+                onAddPlot={handleAddPlot}
+                posterTemplate={posterTemplate}
+                onSavePosterTemplate={handleSavePosterTemplate}
+              />
+            )}
 
-          {currentTab === 'schedules' && (
-            <SchedulesView
-              schedules={schedules}
-              plots={plots}
-              language={language}
-              currentRole={currentUser.role}
-              onAddSchedule={handleAddSchedule}
-              onApproveSchedule={handleApproveSchedule}
-              onRecordDelivery={handleRecordDelivery}
-            />
-          )}
+            {currentTab === 'schedules' && (
+              <SchedulesView
+                schedules={schedules}
+                plots={plots}
+                language={language}
+                currentRole={currentUser.role}
+                onAddSchedule={handleAddSchedule}
+                onApproveSchedule={handleApproveSchedule}
+                onRecordDelivery={handleRecordDelivery}
+              />
+            )}
 
-          {currentTab === 'billing' && (
-            <BillingView
-              invoices={invoices}
-              payments={payments}
-              tariffs={tariffs}
-              farmers={farmers}
-              language={language}
-              currentRole={currentUser.role}
-              onCreateInvoice={handleCreateInvoice}
-              onRecordPayment={handleRecordPayment}
-            />
-          )}
+            {currentTab === 'billing' && (
+              <BillingView
+                invoices={invoices}
+                payments={payments}
+                tariffs={tariffs}
+                farmers={farmers}
+                language={language}
+                currentRole={currentUser.role}
+                onCreateInvoice={handleCreateInvoice}
+                onRecordPayment={handleRecordPayment}
+              />
+            )}
 
-          {currentTab === 'maintenance' && (
-            <MaintenanceView
-              equipment={equipment}
-              workOrders={workOrders}
-              language={language}
-              currentRole={currentUser.role}
-              onCreateWorkOrder={handleCreateWorkOrder}
-              onUpdateWorkOrder={handleUpdateWorkOrder}
-            />
-          )}
+            {currentTab === 'maintenance' && (
+              <MaintenanceView
+                equipment={equipment}
+                workOrders={workOrders}
+                language={language}
+                currentRole={currentUser.role}
+                onCreateWorkOrder={handleCreateWorkOrder}
+                onUpdateWorkOrder={handleUpdateWorkOrder}
+              />
+            )}
 
-          {currentTab === 'reports' && (
-            <ReportsView
-              farmers={farmers}
-              plots={plots}
-              schedules={schedules}
-              invoices={invoices}
-              payments={payments}
-              equipment={equipment}
-              workOrders={workOrders}
-              auditLogs={auditLogs}
-              language={language}
-              currentRole={currentUser.role}
-            />
-          )}
+            {currentTab === 'reports' && (
+              <ReportsView
+                farmers={farmers}
+                plots={plots}
+                schedules={schedules}
+                invoices={invoices}
+                payments={payments}
+                equipment={equipment}
+                workOrders={workOrders}
+                auditLogs={auditLogs}
+                language={language}
+                currentRole={currentUser.role}
+              />
+            )}
 
-          {currentTab === 'sms' && (
-            <SmsLogsView
-              notifications={notifications}
-              farmers={farmers}
-              language={language}
-              onSendManualSms={handleSendSms}
-            />
-          )}
+            {currentTab === 'sms' && (
+              <SmsLogsView
+                notifications={notifications}
+                farmers={farmers}
+                language={language}
+                onSendManualSms={handleSendSms}
+              />
+            )}
 
-          {currentTab === 'settings' && (
-            <SettingsView
-              language={language}
-              currentRole={currentUser.role}
-            />
-          )}
+            {currentTab === 'settings' && (
+              <SettingsView
+                language={language}
+                currentRole={currentUser.role}
+              />
+            )}
 
-          {(currentTab === 'farmer-portal' ||
-            currentTab === 'farmer-schedules' ||
-            currentTab === 'farmer-invoices' ||
-            currentTab === 'farmer-complaints') && (
-            <FarmerPortalView
-              farmer={currentFarmer}
-              plots={plots}
-              schedules={schedules}
-              invoices={invoices}
-              payments={payments}
-              complaints={complaints}
-              checkins={checkins}
-              language={language}
-              onRefreshData={loadData}
-              onSubmitComplaintOnline={handleSubmitComplaint}
-              onVerifyCheckin={handleVerifyCheckin}
-            />
-          )}
+            {(currentTab === 'admin-users' || currentTab === 'admin') && (
+              <AdminUsersView
+                currentUser={currentUser}
+                availableUsers={availableUsers}
+                onSwitchUser={handleSwitchUser}
+                language={language}
+              />
+            )}
+
+            {(currentTab === 'farmer-portal' ||
+              currentTab === 'farmer-schedules' ||
+              currentTab === 'farmer-invoices' ||
+              currentTab === 'farmer-complaints') && (
+              <FarmerPortalView
+                farmer={currentFarmer}
+                plots={plots}
+                schedules={schedules}
+                invoices={invoices}
+                payments={payments}
+                complaints={complaints}
+                checkins={checkins}
+                language={language}
+                onRefreshData={loadData}
+                onSubmitComplaintOnline={handleSubmitComplaint}
+                onVerifyCheckin={handleVerifyCheckin}
+              />
+            )}
           </ErrorBoundary>
         </main>
       </div>

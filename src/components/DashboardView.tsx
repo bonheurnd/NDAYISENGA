@@ -5,12 +5,17 @@ import {
   Calendar,
   AlertTriangle,
   Receipt,
-  CheckCircle,
+  CheckCircle2,
   Wrench,
   TrendingUp,
   Info,
   Droplets,
   ClipboardList,
+  PlusCircle,
+  Clock,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
 } from 'lucide-react';
 import type { Language, SchemeMetrics, WaterSchedule, Invoice, Payment, WorkOrder, IrrigationQuickLog, Plot, UserRole } from '../types/index.ts';
 import { RecentActivityFeed } from './RecentActivityFeed.tsx';
@@ -60,6 +65,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const totalCollected = payments.reduce((sum, p) => sum + p.amountRwf, 0);
   const collectionRate = totalInvoiced > 0 ? Math.round((totalCollected / totalInvoiced) * 100) : 0;
 
+  // Calculate schedules today
+  const todayStr = new Date().toISOString().split('T')[0];
+  const scheduledTodayCount = schedules.filter((s) => {
+    const sDate = new Date(s.plannedStartTime).toISOString().split('T')[0];
+    return sDate === todayStr || s.status === 'IN_PROGRESS' || s.status === 'APPROVED';
+  }).length;
+
+  const completedTodayCount = schedules.filter((s) => s.status === 'COMPLETED').length;
+
+  // Africa/Kigali current date string for display
+  const kigaliDateFormatted = new Intl.DateTimeFormat(language === 'rw' ? 'rw-RW' : 'en-US', {
+    timeZone: 'Africa/Kigali',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date());
+
   return (
     <div className="space-y-6">
       {/* Mandatory Demo Data Notice Banner */}
@@ -75,59 +98,73 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Header with Season and Date Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {language === 'rw' ? 'Ibonerana ry\'Umushinga wa Nasho 1' : 'Nasho 1 Scheme Operations Dashboard'}
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {language === 'rw'
-              ? 'Akarere ka Kirehe · Intara y\'Iburasirazuba · Igihe cy\'Ihinga 2026A'
-              : 'Kirehe District · Eastern Province, Rwanda · Season 2026A'}
-          </p>
-        </div>
+      {/* Hero Welcome Banner with Agricultural Backdrop Image */}
+      <div className="relative rounded-2xl overflow-hidden shadow-lg border border-emerald-900/20 bg-emerald-950 text-white min-h-[160px] flex items-center">
+        {/* Background Image Overlay */}
+        <div className="absolute inset-0 z-0 opacity-35 bg-cover bg-center mix-blend-luminosity" style={{ backgroundImage: `url('/src/assets/images/nasho_center_pivot_1793211206727.jpg')` }} />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950 via-emerald-950/90 to-emerald-900/70 z-0" />
 
-        <div className="flex flex-wrap items-center gap-3">
-          {canSubmitQuickLog && (
-            <button
-              onClick={() => setShowQuickLogModal(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors cursor-pointer"
-              title="Quick Log — Record daily irrigation status"
-            >
-              <ClipboardList className="w-4 h-4" />
-              <span>Quick Log — Andika Raporo Yihuse</span>
-            </button>
-          )}
+        {/* Content Overlay */}
+        <div className="relative z-10 p-6 sm:p-8 w-full flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-800/80 border border-emerald-600/50 text-emerald-200 text-xs font-semibold backdrop-blur-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Umuryango w’Abakoresha Amazi (WUO) · Kirehe, Rwanda</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+              {language === 'rw'
+                ? 'Murakaza neza muri GFI Nasho 1 — Imicungire ya gahunda yo kuhira n\'abakoresha amazi.'
+                : 'Welcome to GFI Nasho 1 — Irrigation Scheme & Water Users Organization'}
+            </h1>
+            <p className="text-xs sm:text-sm text-emerald-100/90 flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{kigaliDateFormatted}</span>
+              <span>•</span>
+              <span>Season {selectedSeason}</span>
+            </p>
+          </div>
 
-          <div className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5">
-            <label htmlFor="season-select" className="text-xs font-medium text-slate-600 dark:text-slate-300">
-              {language === 'rw' ? 'Igihe:' : 'Season:'}
-            </label>
-            <select
-              id="season-select"
-              value={selectedSeason}
-              onChange={(e) => setSelectedSeason(e.target.value)}
-              className="text-xs bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-hidden"
-            >
-              <option value="2026A" className="dark:bg-slate-800">Season 2026A (Current)</option>
-              <option value="2025B" className="dark:bg-slate-800">Season 2025B</option>
-              <option value="ALL" className="dark:bg-slate-800">All Recorded Seasons</option>
-            </select>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            {canSubmitQuickLog && (
+              <button
+                onClick={() => setShowQuickLogModal(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-extrabold rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md transition-colors cursor-pointer"
+              >
+                <ClipboardList className="w-4 h-4" />
+                <span>Quick Log — Andika Raporo</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-2 bg-emerald-900/80 border border-emerald-700/60 rounded-xl px-3 py-2 text-xs">
+              <label htmlFor="season-select" className="text-emerald-200 font-medium whitespace-nowrap">
+                {language === 'rw' ? 'Igihe:' : 'Season:'}
+              </label>
+              <select
+                id="season-select"
+                value={selectedSeason}
+                onChange={(e) => setSelectedSeason(e.target.value)}
+                className="bg-transparent font-bold text-white focus:outline-hidden cursor-pointer"
+              >
+                <option value="2026A" className="bg-emerald-950 text-white">Season 2026A</option>
+                <option value="2025B" className="bg-emerald-950 text-white">Season 2025B</option>
+                <option value="ALL" className="bg-emerald-950 text-white">All Seasons</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Primary KPI Grid (8 Core Operational Metrics) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+      {/* Operational Summary Cards (6 High-Impact Cards) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        {/* Card 1: Active Farmers */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-xs transition hover:border-emerald-500">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
               {language === 'rw' ? 'Abahinzi Bakora' : 'Active Farmers'}
             </span>
-            <Users className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+          <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
             {metrics.activeFarmers}
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
@@ -135,14 +172,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+        {/* Card 2: Active Blocks */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-xs transition hover:border-emerald-500">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">
-              {language === 'rw' ? 'Imirima / Pivo' : 'Registered Plots'}
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {language === 'rw' ? 'Imirima / Pivo' : 'Active Blocks'}
             </span>
             <Grid3X3 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+          <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
             {metrics.registeredPlots}
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
@@ -150,108 +188,171 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+        {/* Card 3: Scheduled Today */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-xs transition hover:border-emerald-500">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">
-              {language === 'rw' ? 'Ubuso Buhingwa' : 'Cultivated Area'}
-            </span>
-            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-            {metrics.cultivatedHectares}{' '}
-            <span className="text-sm font-normal text-slate-500 dark:text-slate-400">Ha</span>
-          </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Irrigated land under crop
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">
-              {language === 'rw' ? 'Guhira Guteganyijwe' : 'Upcoming Deliveries'}
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {language === 'rw' ? 'Guhira ku wa Leo' : 'Scheduled Today'}
             </span>
             <Calendar className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-            {metrics.upcomingSchedules}
+          <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+            {scheduledTodayCount}
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Next 48 operating hours
+            Active water delivery cycles
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+        {/* Card 4: Completed Today */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-xs transition hover:border-emerald-500">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">
-              {language === 'rw' ? 'Guhagarara kw\'Amazi' : 'Water Interruptions'}
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {language === 'rw' ? 'Yarangiye' : 'Completed Cycles'}
             </span>
-            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-            {metrics.reportedInterruptions}
+          <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+            {completedTodayCount}
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Active reported issues
+            Verified completed runs
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+        {/* Card 5: Outstanding Balance */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-xs transition hover:border-emerald-500">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">
-              {language === 'rw' ? 'Ibirarane by\'Inyemezabwishyu' : 'Outstanding Balance'}
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {language === 'rw' ? 'Ibirarane' : 'Outstanding Dues'}
             </span>
             <Receipt className="w-4 h-4 text-rose-600 dark:text-rose-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-            {(metrics.outstandingInvoicesRwf / 1000).toFixed(0)}k{' '}
-            <span className="text-xs font-normal text-slate-500 dark:text-slate-400">RWF</span>
+          <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+            {(metrics.outstandingInvoicesRwf / 1000).toFixed(0)}k <span className="text-xs font-semibold">RWF</span>
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Unsettled seasonal dues
+            Unsettled seasonal levies
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+        {/* Card 6: Open Maintenance */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-xs transition hover:border-emerald-500">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">
-              {language === 'rw' ? 'Amafaranga Yinjiye' : 'Collected Revenue'}
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {language === 'rw' ? 'Gusana Gukorwa' : 'Open Maintenance'}
             </span>
-            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <Wrench className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-            {(metrics.recordedPaymentsRwf / 1000).toFixed(0)}k{' '}
-            <span className="text-xs font-normal text-slate-500 dark:text-slate-400">RWF</span>
-          </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Verified MoMo & bank deposits
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-            <span className="text-xs font-medium">
-              {language === 'rw' ? 'Gusana Gukorwa' : 'Open Work Orders'}
-            </span>
-            <Wrench className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-          </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+          <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
             {metrics.openMaintenanceJobs}
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Active maintenance tickets
+            Active repair work orders
           </div>
         </div>
       </div>
 
-      {/* PROMINENT IRRIGATION CALENDAR COMPONENT */}
-      <IrrigationCalendar
-        schedules={schedules}
-        language={language}
-        onNavigate={onNavigate}
-      />
+      {/* Operational Quick Action Shortcuts Strip */}
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-xs">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>{language === 'rw' ? 'Njyaho Yihuse (Quick Shortcuts)' : 'Operational Quick Shortcuts'}</span>
+        </h3>
 
-      {/* Real-Time Recent Activity Feed & Revenue Collection Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <button
+            onClick={() => onNavigate('schedules')}
+            className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-emerald-300 rounded-xl transition text-left cursor-pointer group"
+          >
+            <div className="p-2 bg-emerald-600 text-white rounded-lg group-hover:scale-105 transition-transform">
+              <Droplets className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">
+                {language === 'rw' ? 'Gutegeka Amazi' : 'Schedule Water'}
+              </div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400">Add delivery cycle</div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => {
+              const el = document.getElementById('irrigation-calendar');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-sky-50 dark:hover:bg-sky-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-sky-300 rounded-xl transition text-left cursor-pointer group"
+          >
+            <div className="p-2 bg-sky-600 text-white rounded-lg group-hover:scale-105 transition-transform">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">
+                {language === 'rw' ? 'Reba Kalendari' : 'View Calendar'}
+              </div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400">See 7-day schedule</div>
+            </div>
+          </button>
+
+          {canSubmitQuickLog && (
+            <button
+              onClick={() => setShowQuickLogModal(true)}
+              className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-amber-300 rounded-xl transition text-left cursor-pointer group"
+            >
+              <div className="p-2 bg-amber-600 text-white rounded-lg group-hover:scale-105 transition-transform">
+                <ClipboardList className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white">
+                  {language === 'rw' ? 'Quick Log' : 'Quick Log'}
+                </div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400">Field status report</div>
+              </div>
+            </button>
+          )}
+
+          <button
+            onClick={() => onNavigate('farmers')}
+            className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-emerald-300 rounded-xl transition text-left cursor-pointer group"
+          >
+            <div className="p-2 bg-emerald-700 text-white rounded-lg group-hover:scale-105 transition-transform">
+              <Users className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">
+                {language === 'rw' ? 'Kwandika Umuhinzi' : 'Register Farmer'}
+              </div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400">Add WUO member</div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => onNavigate('maintenance')}
+            className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-rose-300 rounded-xl transition text-left cursor-pointer group"
+          >
+            <div className="p-2 bg-rose-600 text-white rounded-lg group-hover:scale-105 transition-transform">
+              <Wrench className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">
+                {language === 'rw' ? 'Ibibazo by\'Ibyuma' : 'Maintenance'}
+              </div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400">Pivot work orders</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* PROMINENT COMPACT IRRIGATION CALENDAR COMPONENT */}
+      <div id="irrigation-calendar">
+        <IrrigationCalendar
+          schedules={schedules}
+          language={language}
+          onNavigate={onNavigate}
+        />
+      </div>
+
+      {/* Real-Time Recent Activity Feed & Financial Reconciliation */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Real-Time Recent Activity Feed Component */}
         <RecentActivityFeed
@@ -265,84 +366,61 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         />
 
         {/* Financial Revenue Collection & Reconciliation Health */}
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                {language === 'rw'
-                  ? 'Ubwishyu bwakiriwe n\'Ibirarane'
-                  : 'Revenue Collection & Reconciliation'}
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Seasonal water levy recovery rate
-              </p>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {language === 'rw'
+                    ? 'Ubwishyu bwakiriwe n\'Ibirarane (WUO Levy Reconciliation)'
+                    : 'Revenue Collection & Financial Reconciliation'}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Seasonal water levy recovery rate
+                </p>
+              </div>
+              <button
+                onClick={() => onNavigate('billing')}
+                className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 cursor-pointer flex items-center gap-1"
+              >
+                <span>View Invoices</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <button
-              onClick={() => onNavigate('billing')}
-              className="text-xs font-semibold text-sky-700 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 cursor-pointer"
-            >
-              View Invoices →
-            </button>
-          </div>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700/60 mb-4">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-              <span>Collection Progress</span>
-              <span className="font-bold text-slate-900 dark:text-white tabular-nums">{collectionRate}%</span>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700/60 mb-4">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <span>Seasonal Levy Collection Progress</span>
+                <span className="font-mono text-slate-900 dark:text-white">{collectionRate}%</span>
+              </div>
+              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+                <div
+                  className="bg-emerald-600 dark:bg-emerald-500 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${collectionRate}%` }}
+                />
+              </div>
+              <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-mono tabular-nums">
+                <span>Collected: {totalCollected.toLocaleString()} RWF</span>
+                <span>Invoiced: {totalInvoiced.toLocaleString()} RWF</span>
+              </div>
             </div>
-            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
-              <div
-                className="bg-emerald-600 dark:bg-emerald-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${collectionRate}%` }}
-              />
-            </div>
-            <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-mono tabular-nums">
-              <span>Collected: {totalCollected.toLocaleString()} RWF</span>
-              <span>Total Invoiced: {totalInvoiced.toLocaleString()} RWF</span>
+
+            {/* Tariff and payment rules breakdown */}
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-700/60">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">Center Pivot Seasonal Tariff</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-slate-200">45,000 RWF / Ha</span>
+              </div>
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-700/60">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">WUO Infrastructure Levy</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-slate-200">5,000 RWF / Ha</span>
+              </div>
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">Mobile Money Code</span>
+                <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">MTN MoMo (*182#)</span>
+              </div>
             </div>
           </div>
-
-          {/* Quick summary rows */}
-          <div className="space-y-3 text-xs">
-            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-              <span className="text-slate-600 dark:text-slate-400">Active Center Pivot Tariffs</span>
-              <span className="font-semibold text-slate-900 dark:text-slate-200">45,000 RWF / Ha / Season</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
-              <span className="text-slate-600 dark:text-slate-400">WUO Infrastructure Levy</span>
-              <span className="font-semibold text-slate-900 dark:text-slate-200">5,000 RWF / Ha / Season</span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-slate-600 dark:text-slate-400">Payment Channels Verified</span>
-              <span className="font-medium text-emerald-700 dark:text-emerald-400">MTN MoMo (*182#) · Airtel · BK</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Operational Highlights / Quick Actions Strip */}
-      <div className="bg-slate-900 dark:bg-slate-800 text-white rounded-xl p-5 border border-slate-800 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h3 className="text-sm font-semibold text-white">
-            {language === 'rw' ? 'Ibikorwa Byihutirwa by\'Uyu Munsi' : 'Immediate Operations Checklist'}
-          </h3>
-          <p className="text-xs text-slate-300 dark:text-slate-400 mt-1">
-            Review pending water schedules, process incoming mobile money payments, and inspect Pivot 03 repairs.
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => onNavigate('schedules')}
-            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-sky-600 hover:bg-sky-500 text-white transition cursor-pointer"
-          >
-            Review Schedules
-          </button>
-          <button
-            onClick={() => onNavigate('farmer-portal')}
-            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-slate-200 border border-slate-700 transition cursor-pointer"
-          >
-            Open Farmer PWA
-          </button>
         </div>
       </div>
 
