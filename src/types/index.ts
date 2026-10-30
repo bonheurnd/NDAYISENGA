@@ -44,6 +44,8 @@ export interface Farmer {
   registrationDate: string;
   totalHectares: number;
   assignedPlotIds: string[];
+  latitude?: number;
+  longitude?: number;
   notes?: string;
   isDemo?: boolean;
 }

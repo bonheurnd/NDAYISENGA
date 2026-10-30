@@ -196,6 +196,8 @@ async function startServer() {
       membershipStatus,
       totalHectares,
       assignedPlotIds,
+      latitude,
+      longitude,
       notes,
     } = req.body;
 
@@ -204,6 +206,29 @@ async function startServer() {
     }
     if (!phone || !phone.trim() || phone.trim().length < 10) {
       return res.status(400).json({ error: 'Valid phone number is required (e.g. +250788123456).' });
+    }
+
+    // GPS validation
+    let parsedLat: number | undefined = undefined;
+    let parsedLng: number | undefined = undefined;
+    const hasLat = latitude !== undefined && latitude !== null && latitude !== '';
+    const hasLng = longitude !== undefined && longitude !== null && longitude !== '';
+
+    if (hasLat && !hasLng) {
+      return res.status(400).json({ error: 'Both latitude and longitude are required when providing GPS coordinates, or clear both.' });
+    }
+    if (!hasLat && hasLng) {
+      return res.status(400).json({ error: 'Both latitude and longitude are required when providing GPS coordinates, or clear both.' });
+    }
+    if (hasLat && hasLng) {
+      parsedLat = Number(latitude);
+      parsedLng = Number(longitude);
+      if (isNaN(parsedLat) || parsedLat < -90 || parsedLat > 90) {
+        return res.status(400).json({ error: 'Latitude must be a number between -90 and 90.' });
+      }
+      if (isNaN(parsedLng) || parsedLng < -180 || parsedLng > 180) {
+        return res.status(400).json({ error: 'Longitude must be a number between -180 and 180.' });
+      }
     }
 
     // Duplicate checks
@@ -233,6 +258,8 @@ async function startServer() {
       registrationDate: new Date().toISOString().split('T')[0],
       totalHectares: Number(totalHectares) || 1.0,
       assignedPlotIds: plotIds,
+      latitude: parsedLat,
+      longitude: parsedLng,
       notes: notes?.trim() || undefined,
       isDemo: true,
     };
@@ -271,6 +298,8 @@ async function startServer() {
       membershipStatus,
       totalHectares,
       assignedPlotIds,
+      latitude,
+      longitude,
       notes,
     } = req.body;
 
@@ -279,6 +308,29 @@ async function startServer() {
     }
     if (!phone || !phone.trim() || phone.trim().length < 10) {
       return res.status(400).json({ error: 'Valid phone number is required.' });
+    }
+
+    // GPS validation
+    let parsedLat: number | undefined = undefined;
+    let parsedLng: number | undefined = undefined;
+    const hasLat = latitude !== undefined && latitude !== null && latitude !== '';
+    const hasLng = longitude !== undefined && longitude !== null && longitude !== '';
+
+    if (hasLat && !hasLng) {
+      return res.status(400).json({ error: 'Both latitude and longitude are required when providing GPS coordinates, or clear both.' });
+    }
+    if (!hasLat && hasLng) {
+      return res.status(400).json({ error: 'Both latitude and longitude are required when providing GPS coordinates, or clear both.' });
+    }
+    if (hasLat && hasLng) {
+      parsedLat = Number(latitude);
+      parsedLng = Number(longitude);
+      if (isNaN(parsedLat) || parsedLat < -90 || parsedLat > 90) {
+        return res.status(400).json({ error: 'Latitude must be a number between -90 and 90.' });
+      }
+      if (isNaN(parsedLng) || parsedLng < -180 || parsedLng > 180) {
+        return res.status(400).json({ error: 'Longitude must be a number between -180 and 180.' });
+      }
     }
 
     const cleanedPhone = phone.trim();
@@ -315,6 +367,8 @@ async function startServer() {
     if (membershipStatus) farmer.membershipStatus = membershipStatus;
     if (totalHectares !== undefined) farmer.totalHectares = Number(totalHectares) || 1.0;
     farmer.assignedPlotIds = newPlotIds;
+    farmer.latitude = parsedLat;
+    farmer.longitude = parsedLng;
     if (notes !== undefined) farmer.notes = notes.trim() || undefined;
 
     // Apply new plot assignments

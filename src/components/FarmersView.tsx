@@ -16,9 +16,15 @@ import {
   Grid3X3,
   UserCheck,
   Building2,
+  Navigation,
+  Trash2,
+  RotateCcw,
+  ExternalLink,
+  Info,
 } from 'lucide-react';
 import type { Farmer, Plot, Language, UserRole, MembershipStatus } from '../types/index.ts';
 import { hasPermission } from '../lib/logic/permissions.ts';
+import { isValidGpsCoordinate, formatGpsCoordinate, generateGoogleMapsUrl } from '../lib/logic/plotVisualization.ts';
 
 interface FarmersViewProps {
   farmers: Farmer[];
@@ -65,6 +71,13 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
   const [hectares, setHectares] = useState('1.5');
   const [selectedPlotIds, setSelectedPlotIds] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+
+  // Optional Farmer Registration GPS States
+  const [latInput, setLatInput] = useState('');
+  const [lngInput, setLngInput] = useState('');
+  const [isFetchingGps, setIsFetchingGps] = useState(false);
+  const [gpsMsg, setGpsMsg] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -102,6 +115,10 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
     setMembershipStatus('ACTIVE');
     setHectares('1.5');
     setSelectedPlotIds([]);
+    setLatInput('');
+    setLngInput('');
+    setGpsMsg(null);
+    setIsFetchingGps(false);
     setNotes('');
     setFormError('');
     setShowAddModal(true);
@@ -121,6 +138,14 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
     setMembershipStatus(farmer.membershipStatus || 'ACTIVE');
     setHectares(String(farmer.totalHectares || 1.5));
     setSelectedPlotIds(farmer.assignedPlotIds || []);
+    setLatInput(farmer.latitude !== undefined && farmer.latitude !== null ? farmer.latitude.toFixed(6) : '');
+    setLngInput(farmer.longitude !== undefined && farmer.longitude !== null ? farmer.longitude.toFixed(6) : '');
+    setGpsMsg(
+      farmer.latitude !== undefined && farmer.latitude !== null && farmer.longitude !== undefined && farmer.longitude !== null
+        ? { text: 'GPS coordinates loaded from saved profile.', type: 'info' }
+        : null
+    );
+    setIsFetchingGps(false);
     setNotes(farmer.notes || '');
     setFormError('');
     setShowAddModal(true);
@@ -130,6 +155,49 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
     setSelectedPlotIds((prev) =>
       prev.includes(plotId) ? prev.filter((id) => id !== plotId) : [...prev, plotId]
     );
+  };
+
+  // Capture Current Geolocation Coordinates
+  const handleCaptureGps = () => {
+    setGpsMsg(null);
+
+    if (typeof window === 'undefined' || !navigator || !navigator.geolocation) {
+      setGpsMsg({ text: 'Telefone cyangwa browser yawe ntishyigikiye gukoresha GPS.', type: 'error' });
+      return;
+    }
+
+    setIsFetchingGps(true);
+    setGpsMsg({ text: 'Irimo gushakisha ikerekezo cya GPS...', type: 'info' });
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsFetchingGps(false);
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        setLatInput(lat);
+        setLngInput(lng);
+        setGpsMsg({ text: 'GPS yafashwe neza.', type: 'success' });
+      },
+      (err) => {
+        setIsFetchingGps(false);
+        let msg = 'Ntabwo GPS yabashije gufatwa.';
+        if (err.code === err.PERMISSION_DENIED) {
+          msg = 'Mwanze uburenganzira bwo gukoresha GPS. Murashobora gukomeza kwandika umuhinzi biba GPS.';
+        } else if (err.code === err.TIMEOUT) {
+          msg = 'Gushakisha GPS byafashe igihe kinini. Murashobora gukomeza kwandika umuhinzi biba GPS.';
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          msg = 'Aho muryoheye ntahabasha kumenyekana. Murashobora gukomeza biba GPS.';
+        }
+        setGpsMsg({ text: msg, type: 'error' });
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  };
+
+  const handleClearGps = () => {
+    setLatInput('');
+    setLngInput('');
+    setGpsMsg(null);
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -149,6 +217,35 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
       return;
     }
 
+    // Optional GPS Validation
+    const hasLat = latInput.trim() !== '';
+    const hasLng = lngInput.trim() !== '';
+
+    if (hasLat && !hasLng) {
+      setFormError('Habura Longitude ngo GPS yuzure. Shyiramo zombi cyangwa kanda "Siba GPS".');
+      return;
+    }
+    if (!hasLat && hasLng) {
+      setFormError('Habura Latitude ngo GPS yuzure. Shyiramo zombi cyangwa kanda "Siba GPS".');
+      return;
+    }
+
+    let parsedLat: number | undefined = undefined;
+    let parsedLng: number | undefined = undefined;
+
+    if (hasLat && hasLng) {
+      parsedLat = parseFloat(latInput);
+      parsedLng = parseFloat(lngInput);
+      if (isNaN(parsedLat) || parsedLat < -90 || parsedLat > 90) {
+        setFormError('Latitude igomba kuba umubare uri hagati ya -90 na 90.');
+        return;
+      }
+      if (isNaN(parsedLng) || parsedLng < -180 || parsedLng > 180) {
+        setFormError('Longitude igomba kuba umubare uri hagati ya -180 na 180.');
+        return;
+      }
+    }
+
     const payload: Partial<Farmer> = {
       fullName: fullName.trim(),
       phone: phone.trim(),
@@ -162,6 +259,8 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
       membershipStatus,
       totalHectares: parseFloat(hectares) || 1.0,
       assignedPlotIds: selectedPlotIds,
+      latitude: parsedLat,
+      longitude: parsedLng,
       notes: notes.trim() || undefined,
     };
 
@@ -470,6 +569,20 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
                 </div>
               </div>
 
+              {/* Registration GPS Coordinates Display if captured */}
+              {isValidGpsCoordinate(selectedFarmer.latitude, selectedFarmer.longitude) && (
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 rounded-xl border border-emerald-200 dark:border-emerald-800 space-y-1 font-mono">
+                  <span className="font-bold text-emerald-900 dark:text-emerald-200 block text-[11px] flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Registration GPS Coordinates:</span>
+                  </span>
+                  <div className="flex justify-between text-[11px] text-emerald-950 dark:text-emerald-100 pt-1">
+                    <span>Lat: {formatGpsCoordinate(selectedFarmer.latitude!)}</span>
+                    <span>Lng: {formatGpsCoordinate(selectedFarmer.longitude!)}</span>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <span className="text-slate-500 dark:text-slate-400 block text-[11px] font-bold mb-1">Assigned Irrigation Plots:</span>
                 {selectedFarmer.assignedPlotIds && selectedFarmer.assignedPlotIds.length > 0 ? (
@@ -646,6 +759,86 @@ export const FarmersView: React.FC<FarmersViewProps> = ({
                       onChange={(e) => setVillage(e.target.value)}
                       placeholder="Kagezi"
                       className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-emerald-500 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* --- OPTIONAL FARMER REGISTRATION GPS CAPTURE SECTION --- */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-white block text-xs flex items-center gap-1.5">
+                    <Navigation className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Aho umuhinzi aherereye (GPS — si ngombwa)</span>
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">
+                    OPTIONAL
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCaptureGps}
+                    disabled={isFetchingGps}
+                    className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                  >
+                    <Navigation className={`w-3.5 h-3.5 ${isFetchingGps ? 'animate-spin' : ''}`} />
+                    <span>{isFetchingGps ? 'Irimo gushakisha GPS...' : 'Fata aho ndi ubu (GPS)'}</span>
+                  </button>
+
+                  {(latInput.trim() !== '' || lngInput.trim() !== '') && (
+                    <button
+                      type="button"
+                      onClick={handleClearGps}
+                      className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold rounded-xl text-xs flex items-center gap-1 transition cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Siba GPS</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* GPS Status Message Display */}
+                {gpsMsg && (
+                  <div
+                    className={`p-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                      gpsMsg.type === 'success'
+                        ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800'
+                        : gpsMsg.type === 'error'
+                        ? 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800'
+                        : 'bg-sky-100 text-sky-900 border border-sky-300 dark:bg-sky-950 dark:text-sky-200 dark:border-sky-800'
+                    }`}
+                  >
+                    <Info className="w-4 h-4 shrink-0" />
+                    <span>{gpsMsg.text}</span>
+                  </div>
+                )}
+
+                {/* Coordinate Input Fields */}
+                <div className="grid grid-cols-2 gap-3 font-mono">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                      Latitude
+                    </label>
+                    <input
+                      type="text"
+                      value={latInput}
+                      onChange={(e) => setLatInput(e.target.value)}
+                      placeholder="-2.062400"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs font-bold focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                      Longitude
+                    </label>
+                    <input
+                      type="text"
+                      value={lngInput}
+                      onChange={(e) => setLngInput(e.target.value)}
+                      placeholder="30.738100"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg text-xs font-bold focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
