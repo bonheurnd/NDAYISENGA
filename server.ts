@@ -183,30 +183,151 @@ async function startServer() {
   });
 
   app.post('/api/v1/farmers', requirePermission('CREATE_FARMER'), (req, res) => {
-    const { fullName, phone, nationalId, email, cooperativeName, totalHectares, notes } = req.body;
-    if (!fullName || !phone) {
-      return res.status(400).json({ error: 'Full name and phone number are required.' });
-    }
-
-    const newFarmer: Farmer = {
-      id: `fmr-${Date.now()}`,
-      farmerCode: `NSH-FMR-${String(farmers.length + 101).padStart(4, '0')}`,
+    const {
       fullName,
       phone,
       nationalId,
       email,
+      village,
+      cell,
+      sector,
+      district,
+      cooperativeName,
+      membershipStatus,
+      totalHectares,
+      assignedPlotIds,
+      notes,
+    } = req.body;
+
+    if (!fullName || !fullName.trim()) {
+      return res.status(400).json({ error: 'Farmer full name is required.' });
+    }
+    if (!phone || !phone.trim() || phone.trim().length < 10) {
+      return res.status(400).json({ error: 'Valid phone number is required (e.g. +250788123456).' });
+    }
+
+    // Duplicate checks
+    const cleanedPhone = phone.trim();
+    if (farmers.some((f) => f.phone === cleanedPhone)) {
+      return res.status(409).json({ error: `Phone number ${cleanedPhone} is already registered to an existing farmer.` });
+    }
+    if (nationalId && nationalId.trim() && farmers.some((f) => f.nationalId === nationalId.trim())) {
+      return res.status(409).json({ error: `National ID ${nationalId.trim()} is already registered.` });
+    }
+
+    const plotIds: string[] = Array.isArray(assignedPlotIds) ? assignedPlotIds : [];
+
+    const newFarmer: Farmer = {
+      id: `fmr-${Date.now()}`,
+      farmerCode: `NSH-FMR-${String(farmers.length + 101).padStart(4, '0')}`,
+      fullName: fullName.trim(),
+      phone: cleanedPhone,
+      nationalId: nationalId?.trim() || undefined,
+      email: email?.trim() || undefined,
+      village: village?.trim() || undefined,
+      cell: cell?.trim() || undefined,
+      sector: sector?.trim() || undefined,
+      district: district?.trim() || 'Kirehe',
       cooperativeName: cooperativeName || "Umuryango w'Abakoresha Amazi Nasho (WUO)",
-      membershipStatus: 'ACTIVE',
+      membershipStatus: membershipStatus || 'ACTIVE',
       registrationDate: new Date().toISOString().split('T')[0],
       totalHectares: Number(totalHectares) || 1.0,
-      assignedPlotIds: [],
-      notes,
+      assignedPlotIds: plotIds,
+      notes: notes?.trim() || undefined,
       isDemo: true,
     };
 
+    // Update associated plots in memory
+    plotIds.forEach((pId) => {
+      const targetPlot = plots.find((p) => p.id === pId);
+      if (targetPlot) {
+        targetPlot.currentFarmerId = newFarmer.id;
+        targetPlot.currentFarmerName = newFarmer.fullName;
+      }
+    });
+
     farmers.unshift(newFarmer);
-    recordAudit('CREATE_FARMER', `Registered new member ${fullName} (${newFarmer.farmerCode})`);
+    recordAudit('CREATE_FARMER', `Registered new member ${fullName} (${newFarmer.farmerCode}) with ${plotIds.length} plot(s)`);
     res.status(201).json(newFarmer);
+  });
+
+  // Edit / Update existing farmer
+  app.put('/api/v1/farmers/:id', requirePermission('CREATE_FARMER'), (req, res) => {
+    const farmer = farmers.find((f) => f.id === req.params.id);
+    if (!farmer) {
+      return res.status(404).json({ error: 'Farmer record not found.' });
+    }
+
+    const {
+      fullName,
+      phone,
+      nationalId,
+      email,
+      village,
+      cell,
+      sector,
+      district,
+      cooperativeName,
+      membershipStatus,
+      totalHectares,
+      assignedPlotIds,
+      notes,
+    } = req.body;
+
+    if (!fullName || !fullName.trim()) {
+      return res.status(400).json({ error: 'Farmer full name is required.' });
+    }
+    if (!phone || !phone.trim() || phone.trim().length < 10) {
+      return res.status(400).json({ error: 'Valid phone number is required.' });
+    }
+
+    const cleanedPhone = phone.trim();
+    if (farmers.some((f) => f.id !== farmer.id && f.phone === cleanedPhone)) {
+      return res.status(409).json({ error: `Phone number ${cleanedPhone} is already registered to another farmer.` });
+    }
+    if (nationalId && nationalId.trim() && farmers.some((f) => f.id !== farmer.id && f.nationalId === nationalId.trim())) {
+      return res.status(409).json({ error: `National ID ${nationalId.trim()} is already registered to another farmer.` });
+    }
+
+    const newPlotIds: string[] = Array.isArray(assignedPlotIds) ? assignedPlotIds : [];
+
+    // Clear old plot assignments
+    farmer.assignedPlotIds.forEach((oldPlotId) => {
+      if (!newPlotIds.includes(oldPlotId)) {
+        const p = plots.find((plt) => plt.id === oldPlotId);
+        if (p && p.currentFarmerId === farmer.id) {
+          p.currentFarmerId = undefined;
+          p.currentFarmerName = undefined;
+        }
+      }
+    });
+
+    // Update farmer
+    farmer.fullName = fullName.trim();
+    farmer.phone = cleanedPhone;
+    if (nationalId !== undefined) farmer.nationalId = nationalId.trim() || undefined;
+    if (email !== undefined) farmer.email = email.trim() || undefined;
+    if (village !== undefined) farmer.village = village.trim() || undefined;
+    if (cell !== undefined) farmer.cell = cell.trim() || undefined;
+    if (sector !== undefined) farmer.sector = sector.trim() || undefined;
+    if (district !== undefined) farmer.district = district.trim() || 'Kirehe';
+    if (cooperativeName) farmer.cooperativeName = cooperativeName;
+    if (membershipStatus) farmer.membershipStatus = membershipStatus;
+    if (totalHectares !== undefined) farmer.totalHectares = Number(totalHectares) || 1.0;
+    farmer.assignedPlotIds = newPlotIds;
+    if (notes !== undefined) farmer.notes = notes.trim() || undefined;
+
+    // Apply new plot assignments
+    newPlotIds.forEach((pId) => {
+      const p = plots.find((plt) => plt.id === pId);
+      if (p) {
+        p.currentFarmerId = farmer.id;
+        p.currentFarmerName = farmer.fullName;
+      }
+    });
+
+    recordAudit('UPDATE_FARMER', `Updated farmer profile ${farmer.fullName} (${farmer.farmerCode})`);
+    res.json(farmer);
   });
 
   app.post('/api/v1/farmers/import-csv', requirePermission('IMPORT_FARMERS'), (req, res) => {

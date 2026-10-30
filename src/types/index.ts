@@ -35,6 +35,10 @@ export interface Farmer {
   phone: string;
   nationalId?: string;
   email?: string;
+  village?: string;  // Umudugudu
+  cell?: string;     // Akagari
+  sector?: string;   // Umurenge
+  district?: string; // e.g. Kirehe
   cooperativeName: string; // e.g. "Umuryango w'Abakoresha Amazi Nasho (WUO)"
   membershipStatus: MembershipStatus;
   registrationDate: string;

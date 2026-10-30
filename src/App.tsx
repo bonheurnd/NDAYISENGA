@@ -142,6 +142,13 @@ export default function App() {
     loadData();
   }, []);
 
+  // Enforce role-based access control tab routing
+  useEffect(() => {
+    if (currentUser.role === 'FARMER' && !currentTab.startsWith('farmer-')) {
+      setCurrentTab('farmer-portal');
+    }
+  }, [currentUser.role, currentTab]);
+
   // Handlers for state updates
   const handleSwitchUser = async (userId: string) => {
     try {
@@ -165,6 +172,13 @@ export default function App() {
     const created = await api.createFarmer(farmerData);
     setFarmers((prev) => [created, ...prev]);
     loadData();
+  };
+
+  const handleUpdateFarmer = async (id: string, farmerData: Partial<Farmer>) => {
+    const updated = await api.updateFarmer(id, farmerData);
+    setFarmers((prev) => prev.map((f) => (f.id === id ? updated : f)));
+    loadData();
+    return updated;
   };
 
   const handleImportCsv = async (rows: any[]) => {
@@ -308,9 +322,11 @@ export default function App() {
             {currentTab === 'farmers' && (
               <FarmersView
                 farmers={farmers}
+                plots={plots}
                 language={language}
                 currentRole={currentUser.role}
                 onAddFarmer={handleAddFarmer}
+                onUpdateFarmer={handleUpdateFarmer}
                 onImportCsv={handleImportCsv}
               />
             )}

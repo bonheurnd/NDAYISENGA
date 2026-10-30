@@ -77,6 +77,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  updateFarmer: (id: string, data: Partial<Farmer>) =>
+    fetchJson<Farmer>(`/farmers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
   importFarmersCsv: (rows: any[]) =>
     fetchJson<{ importedCount: number; errorCount: number; errors: any[]; imported: Farmer[] }>(
       '/farmers/import-csv',
